@@ -3,7 +3,7 @@
 
 ## Descrição do Projeto
 
-Este projeto é uma API REST desenvolvida com **Spring Boot** para a gestão de salários de docentes de uma instituição académica.  
+Este projeto é uma API REST desenvolvida com **Spring Boot** para a gestão de salários de docentes da UJC.  
 O sistema permite gerir docentes, disciplinas, contratos, carga horária e processamento de pagamentos, com controlo de acesso por perfis de utilizador.
 
 ---
