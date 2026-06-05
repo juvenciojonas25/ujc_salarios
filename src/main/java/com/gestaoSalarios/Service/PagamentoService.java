@@ -2,14 +2,16 @@ package com.gestaoSalarios.Service;
 
 import com.gestaoSalarios.Model.*;
 import com.gestaoSalarios.Repository.CargaHorariaRepository;
+import com.gestaoSalarios.Repository.ContratoRepository;
 import com.gestaoSalarios.Repository.DocenteRepository;
 import com.gestaoSalarios.Repository.PagamentoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -24,56 +26,51 @@ public class PagamentoService {
     @Autowired
     private CargaHorariaRepository cargaHorariaRepository;
 
-    // Taxa de desconto IRPS simulada (pode ser alterada)
+    @Autowired
+    private ContratoRepository contratoRepository;
+
     private double calcularDescontoIRPS(double salarioBruto) {
-        if (salarioBruto <= 50000) {
-            return salarioBruto * 0.10; // 10%
-        } else if (salarioBruto <= 100000) {
-            return salarioBruto * 0.15; // 15%
-        } else {
-            return salarioBruto * 0.20; // 20%
-        }
+        if (salarioBruto <= 50000) return salarioBruto * 0.10;
+        else if (salarioBruto <= 100000) return salarioBruto * 0.15;
+        else return salarioBruto * 0.20;
     }
 
-    /**
-     * Processar pagamento de um docente para um determinado mês (formato "yyyy-MM").
-     * Calcula:
-     * - total_horas (horas lecionadas no mês)
-     * - salario_bruto = total_horas * valor_hora (do docente ou do contrato ativo)
-     * - desconto_irps (aplicado sobre salario_bruto)
-     * - salario_liquido = salario_bruto - desconto_irps
-     * Cria ou atualiza um pagamento com estado PROCESSADO.
-     */
     @Transactional
-    public Pagamento processarPagamento(String docenteId, String mes) {
+    public Pagamento processarPagamento(String docenteId, int ano, int mes) {
         Docente docente = docenteRepository.findById(docenteId)
                 .orElseThrow(() -> new RuntimeException("Docente não encontrado: " + docenteId));
 
-        // Verificar se já existe processamento para este docente/mês
-        if (pagamentoRepository.existsByDocenteAndMes(docente, mes)) {
-            throw new RuntimeException("Pagamento já processado para o docente " + docenteId + " no mês " + mes);
+        String mesStr = String.format("%d-%02d", ano, mes);
+        if (pagamentoRepository.existsByDocenteAndMes(docente, mesStr)) {
+            throw new RuntimeException("Pagamento já processado para o docente " + docenteId + " no mês " + mesStr);
         }
 
-        // Obter total de horas lecionadas no mês
-        Double totalHoras = cargaHorariaRepository.sumHorasLecionadasByDocenteAndMes(docente, mes);
+        // Buscar contrato ativo na data do primeiro dia do mês
+        LocalDate dataReferencia = LocalDate.of(ano, mes, 1);
+        List<Contrato> contratosAtivos = contratoRepository.findByDocenteAndDataFimIsNullOrDataFimGreaterThanEqual(docente, dataReferencia);
+        Double valorHora;
+        if (!contratosAtivos.isEmpty()) {
+            // Pega o contrato com maior dataInicio (mais recente)
+            valorHora = contratosAtivos.stream()
+                    .max((c1, c2) -> c1.getDataInicio().compareTo(c2.getDataInicio()))
+                    .get().getValorPagoPorHora();
+        } else {
+            valorHora = docente.getValorPagoPorHora();
+        }
+
+        Double totalHoras = cargaHorariaRepository.sumHorasLecionadasByDocenteAndMes(docente, ano, mes);
         if (totalHoras == null || totalHoras == 0) {
-            throw new RuntimeException("Nenhuma hora lecionada encontrada para o docente no mês " + mes);
+            throw new RuntimeException("Nenhuma hora lecionada encontrada para o docente no mês " + mesStr);
         }
 
-        // Definir valor por hora (prioridade: contrato ativo, caso contrário usa valor do docente)
-        // Aqui simplificamos: usa o valor do docente diretamente. Você pode melhorar buscando contrato ativo.
-        Double valorHora = docente.getValorPagoPorHora();
-
-        // Cálculos
         double salarioBruto = totalHoras * valorHora;
         double desconto = calcularDescontoIRPS(salarioBruto);
         double salarioLiquido = salarioBruto - desconto;
 
-        // Construir pagamento
         Pagamento pagamento = Pagamento.builder()
                 .docente(docente)
-                .referenciaPagamento(gerarReferencia(docenteId, mes))
-                .mes(mes)
+                .referenciaPagamento(gerarReferencia(docenteId, ano, mes))
+                .mes(mesStr)
                 .totalHoras(totalHoras)
                 .valorHora(valorHora)
                 .salarioBruto(salarioBruto)
@@ -83,40 +80,28 @@ public class PagamentoService {
                 .estadoPagamento(EstadoPagamento.PROCESSADO)
                 .build();
 
-        // Gerar ID do pagamento (PAG001...)
-        String ultimoId = pagamentoRepository.findAll().stream()
-                .map(Pagamento::getId)
-                .reduce((first, second) -> second)
-                .orElse(null);
-        String novoId = Pagamento.gerarProximoId(ultimoId);
-        pagamento.setId(novoId);
-
         return pagamentoRepository.save(pagamento);
     }
 
-    private String gerarReferencia(String docenteId, String mes) {
-        return "REF-" + docenteId + "-" + mes;
+    private String gerarReferencia(String docenteId, int ano, int mes) {
+        return "REF-" + docenteId + "-" + ano + "-" + mes;
     }
 
-    /**
-     * Listar todos os pagamentos.
-     */
     public List<Pagamento> listarPagamentos() {
         return pagamentoRepository.findAll();
     }
 
-    /**
-     * Listar pagamentos de um docente.
-     */
+    public Pagamento buscarPorId(String id) {
+        return pagamentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado: " + id));
+    }
+
     public List<Pagamento> listarPagamentosPorDocente(String docenteId) {
         Docente docente = docenteRepository.findById(docenteId)
                 .orElseThrow(() -> new RuntimeException("Docente não encontrado: " + docenteId));
         return pagamentoRepository.findByDocente(docente);
     }
 
-    /**
-     * Alterar estado do pagamento (ex: de PROCESSADO para PAGO).
-     */
     @Transactional
     public Pagamento alterarEstadoPagamento(String pagamentoId, EstadoPagamento novoEstado) {
         Pagamento pagamento = pagamentoRepository.findById(pagamentoId)

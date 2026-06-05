@@ -19,65 +19,46 @@ public class DisciplinaService {
     @Autowired
     private DocenteRepository docenteRepository;
 
-    /**
-     * Cadastro de disciplina com associação a um docente.
-     * Gera ID automaticamente (DISC001...)
-     */
     @Transactional
     public Disciplina cadastrarDisciplina(Disciplina disciplina, String docenteId) {
         Docente docente = docenteRepository.findById(docenteId)
-                .orElseThrow(() -> new RuntimeException("Docente não encontrado com ID: " + docenteId));
+                .orElseThrow(() -> new RuntimeException("Docente não encontrado: " + docenteId));
         disciplina.setDocente(docente);
-
-        // Gerar próximo ID
-        String ultimoId = disciplinaRepository.findAll().stream()
-                .map(Disciplina::getId)
-                .reduce((first, second) -> second)
-                .orElse(null);
-        String novoId = Disciplina.gerarProximoId(ultimoId);
-        disciplina.setId(novoId);
-
         return disciplinaRepository.save(disciplina);
     }
 
-    /**
-     * Associar (ou alterar) docente responsável por uma disciplina.
-     */
     @Transactional
     public Disciplina associarDocente(String disciplinaId, String docenteId) {
         Disciplina disciplina = disciplinaRepository.findById(disciplinaId)
-                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com ID: " + disciplinaId));
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada: " + disciplinaId));
         Docente docente = docenteRepository.findById(docenteId)
-                .orElseThrow(() -> new RuntimeException("Docente não encontrado com ID: " + docenteId));
+                .orElseThrow(() -> new RuntimeException("Docente não encontrado: " + docenteId));
         disciplina.setDocente(docente);
         return disciplinaRepository.save(disciplina);
     }
 
-    /**
-     * Atribuir horas ao docente (na verdade é alterar a carga horária da disciplina).
-     * O requisito "Atribuir horas ao Docente" pode ser interpretado como definir
-     * a carga horária total da disciplina que o docente irá lecionar.
-     */
     @Transactional
     public Disciplina atribuirHorasAoDocente(String disciplinaId, Integer cargaHoraria) {
         Disciplina disciplina = disciplinaRepository.findById(disciplinaId)
-                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com ID: " + disciplinaId));
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada: " + disciplinaId));
         disciplina.setCargaHoraria(cargaHoraria);
         return disciplinaRepository.save(disciplina);
     }
 
-    /**
-     * Listar todas as disciplinas.
-     */
     public List<Disciplina> listarDisciplinas() {
         return disciplinaRepository.findAll();
     }
 
-    /**
-     * Buscar disciplina por ID.
-     */
     public Disciplina buscarPorId(String id) {
         return disciplinaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada: " + id));
+    }
+
+    @Transactional
+    public void removerDisciplina(String id) {
+        if (!disciplinaRepository.existsById(id)) {
+            throw new RuntimeException("Disciplina não encontrada: " + id);
+        }
+        disciplinaRepository.deleteById(id);
     }
 }

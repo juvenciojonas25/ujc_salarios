@@ -24,9 +24,6 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    /**
-     * Registar um novo usuário (para ADMIN ou FINANCEIRO).
-     */
     public User registrarUsuario(String username, String password, Role role) {
         if (userRepository.existsByUsername(username)) {
             throw new RuntimeException("Username já existe: " + username);
@@ -39,17 +36,12 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    /**
-     * Registar um usuário do tipo DOCENTE associado a um docente existente.
-     */
     public User registrarDocenteUser(String username, String password, String docenteId) {
         Docente docente = docenteRepository.findById(docenteId)
                 .orElseThrow(() -> new RuntimeException("Docente não encontrado: " + docenteId));
-
         if (userRepository.existsByUsername(username)) {
             throw new RuntimeException("Username já existe: " + username);
         }
-
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))

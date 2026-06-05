@@ -1,10 +1,14 @@
 package com.gestaoSalarios.Model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 
@@ -17,35 +21,27 @@ import java.time.LocalDate;
 public class Contrato {
 
     @Id
-    @Column(name = "id", nullable = false, unique = true)
-    private String id;  // formato CON001, CON002...
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String id;
 
-    @Column(name = "numero", nullable = false, unique = true)
-    private String numero;  // número do contrato
+    @NotBlank
+    @Column(unique = true)
+    private String numero;
 
     @ManyToOne
     @JoinColumn(name = "docente_id", nullable = false)
     private Docente docente;
 
-    @Column(name = "data_inicio", nullable = false)
+    @NotNull
     private LocalDate dataInicio;
 
-    @Column(name = "data_fim")
-    private LocalDate dataFim;  // pode ser null se contrato vigente
+    private LocalDate dataFim;
 
-    @Column(name = "valor_pago_por_hora", nullable = false)
+    @Positive
     private Double valorPagoPorHora;
 
-    @Column(name = "carga_horaria_prevista", nullable = false)
-    private Integer cargaHorariaPrevista;  // total de horas previstas no contrato
-
-    public static String gerarProximoId(String ultimoId) {
-        if (ultimoId == null || ultimoId.isEmpty()) {
-            return "CON001";
-        }
-        String numeroStr = ultimoId.substring(3);
-        int numero = Integer.parseInt(numeroStr);
-        int proximoNumero = numero + 1;
-        return String.format("CON%03d", proximoNumero);
-    }
+    @Positive
+    private Integer cargaHorariaPrevista;
 }

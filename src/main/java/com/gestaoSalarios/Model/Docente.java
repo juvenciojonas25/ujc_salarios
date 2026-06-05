@@ -1,12 +1,11 @@
 package com.gestaoSalarios.Model;
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import org.hibernate.annotations.GenericGenerator;
 
 @Data
 @Builder
@@ -17,47 +16,38 @@ import java.util.List;
 public class Docente {
 
     @Id
-    @Column(name = "id", nullable = false, unique = true)
-    private String id;  // formato DOC001, DOC002...
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String id;
 
-    @Column(name = "nome", nullable = false)
+    @NotBlank
     private String nome;
 
-    @Column(name = "apelido", nullable = false)
+    @NotBlank
     private String apelido;
 
-    @Column(name = "nuit", nullable = false, unique = true)
+    @NotBlank
+    @Column(unique = true)
     private String nuit;
 
-    @Column(name = "genero", nullable = false)
-    private String genero;  // "M" ou "F"
+    @NotBlank
+    @Pattern(regexp = "M|F")
+    private String genero;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @NotBlank
+    @Email
+    @Column(unique = true)
     private String email;
 
-    @Column(name = "valor_pago_por_hora", nullable = false)
+    @Positive
     private Double valorPagoPorHora;
 
-    @Column(name = "banco")
     private String banco;
 
-    @Column(name = "nib", unique = true)
+    @Column(unique = true)
     private String nib;
 
-    @Column(name = "categoria", nullable = false)
-    private String categoria;  // ex: "Assistente", "Coordenador"
-
-    // Relacionamentos (serão mapeados pelas outras entidades)
-    // Um docente pode ter muitas disciplinas, contratos, cargas horárias e pagamentos
-
-    // Método auxiliar para gerar ID sequencial
-    public static String gerarProximoId(String ultimoId) {
-        if (ultimoId == null || ultimoId.isEmpty()) {
-            return "DOC001";
-        }
-        String numeroStr = ultimoId.substring(3);
-        int numero = Integer.parseInt(numeroStr);
-        int proximoNumero = numero + 1;
-        return String.format("DOC%03d", proximoNumero);
-    }
+    @NotBlank
+    private String categoria;
 }

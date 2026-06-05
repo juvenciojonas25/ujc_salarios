@@ -1,10 +1,13 @@
 package com.gestaoSalarios.Model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 
@@ -17,8 +20,10 @@ import java.time.LocalDate;
 public class CargaHoraria {
 
     @Id
-    @Column(name = "id", nullable = false, unique = true)
-    private String id;  // formato CH001, CH002...
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String id;
 
     @ManyToOne
     @JoinColumn(name = "docente_id", nullable = false)
@@ -28,19 +33,9 @@ public class CargaHoraria {
     @JoinColumn(name = "disciplina_id", nullable = false)
     private Disciplina disciplina;
 
-    @Column(name = "data_aula", nullable = false)
+    @NotNull
     private LocalDate dataAula;
 
-    @Column(name = "horas_lecionadas", nullable = false)
-    private Double horasLecionadas;  // pode ser fracionado (2.5 horas)
-
-    public static String gerarProximoId(String ultimoId) {
-        if (ultimoId == null || ultimoId.isEmpty()) {
-            return "CH001";
-        }
-        String numeroStr = ultimoId.substring(2);
-        int numero = Integer.parseInt(numeroStr);
-        int proximoNumero = numero + 1;
-        return String.format("CH%03d", proximoNumero);
-    }
+    @Positive
+    private Double horasLecionadas;
 }

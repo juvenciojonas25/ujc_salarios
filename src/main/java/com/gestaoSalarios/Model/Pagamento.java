@@ -1,10 +1,15 @@
 package com.gestaoSalarios.Model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -16,48 +21,40 @@ import java.time.LocalDateTime;
 public class Pagamento {
 
     @Id
-    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "VARCHAR(36)")
     private String id;
 
     @ManyToOne
     @JoinColumn(name = "docente_id", nullable = false)
     private Docente docente;
 
-    @Column(name = "referencia_pagamento", nullable = false, unique = true)
+    @NotBlank
+    @Column(unique = true)
     private String referenciaPagamento;
 
-    @Column(name = "mes", nullable = false)
+    @NotBlank
     private String mes;
 
-    @Column(name = "total_horas", nullable = false)
+    @Positive
     private Double totalHoras;
 
-    @Column(name = "valor_hora", nullable = false)
+    @Positive
     private Double valorHora;
 
-    @Column(name = "salario_bruto", nullable = false)
+    @Positive
     private Double salarioBruto;
 
-    @Column(name = "desconto_irps", nullable = false)
+    @Positive
     private Double descontoIrps;
 
-    @Column(name = "salario_liquido", nullable = false)
+    @Positive
     private Double salarioLiquido;
 
-    @Column(name = "data_processamento", nullable = false)
+    @NotNull
     private LocalDateTime dataProcessamento;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_pagamento", nullable = false)
     private EstadoPagamento estadoPagamento;
-
-    public static String gerarProximoId(String ultimoId) {
-        if (ultimoId == null || ultimoId.isEmpty()) {
-            return "PAG001";
-        }
-        String numeroStr = ultimoId.substring(3);
-        int numero = Integer.parseInt(numeroStr);
-        int proximoNumero = numero + 1;
-        return String.format("PAG%03d", proximoNumero);
-    }
 }
