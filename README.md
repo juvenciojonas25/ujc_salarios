@@ -1,14 +1,14 @@
 ```markdown
-# 💼 Sistema de Gestão de Salários de Docentes
+# Sistema de Gestão de Salários de Docentes
 
-## 📌 Descrição do Projeto
+## Descrição do Projeto
 
 Este projeto é uma API REST desenvolvida com **Spring Boot** para a gestão de salários de docentes de uma instituição académica.  
 O sistema permite gerir docentes, disciplinas, contratos, carga horária e processamento de pagamentos, com controlo de acesso por perfis de utilizador.
 
 ---
 
-## ⚙️ Funcionalidades
+## Funcionalidades
 
 - Gestão de docentes (CRUD)
 - Gestão de disciplinas (CRUD)
@@ -22,7 +22,7 @@ O sistema permite gerir docentes, disciplinas, contratos, carga horária e proce
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 - Java 17+
 - Spring Boot
@@ -37,7 +37,7 @@ O sistema permite gerir docentes, disciplinas, contratos, carga horária e proce
 
 ---
 
-## 🧱 Arquitetura do Projeto
+## Arquitetura do Projeto
 
 O projeto segue uma arquitetura em camadas:
 
@@ -72,7 +72,7 @@ com.ujc.salarios
 
 ---
 
-## 🔐 Autenticação e Perfis
+## Autenticação e Perfis
 
 O sistema possui autenticação baseada em Spring Security.
 
@@ -84,7 +84,7 @@ O sistema possui autenticação baseada em Spring Security.
 
 ---
 
-## 📊 Entidades Principais
+## Entidades Principais
 
 - Docente
 - Disciplina
@@ -96,7 +96,7 @@ O sistema possui autenticação baseada em Spring Security.
 
 ---
 
-## 🚀 Como Executar o Projeto
+## Como Executar o Projeto
 
 ### 1. Clonar o repositório
 
@@ -129,7 +129,7 @@ Exemplo de configuração para MySQL:
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/ujc_salarios?useSSL=false&serverTimezone=UTC
 spring.datasource.username=root
-spring.datasource.password=sua_senha
+spring.datasource.password=
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
@@ -158,7 +158,7 @@ ou
 
 ---
 
-## 📚 Documentação da API
+## Documentação da API
 
 Após iniciar o projeto, aceder:
 
@@ -168,7 +168,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ---
 
-## 👤 Utilizadores padrão (DataInitializer)
+## Utilizadores padrão (DataInitializer)
 
 O sistema cria automaticamente utilizadores para testes:
 
@@ -180,7 +180,7 @@ O sistema cria automaticamente utilizadores para testes:
 
 ---
 
-## 📌 Endpoints principais e exemplos
+## Endpoints principais e exemplos
 
 ### Autenticação
 
@@ -227,9 +227,9 @@ O sistema cria automaticamente utilizadores para testes:
 
 ---
 
-## 📈 Melhorias Futuras
+## Melhorias Futuras
 
-- Implementação de JWT (token authentication)
+- Implementação de JWT Avancado (token authentication)
 - Relatórios em PDF
 - Dashboard administrativo
 - Paginação e filtros avançados
@@ -237,7 +237,10 @@ O sistema cria automaticamente utilizadores para testes:
 
 ---
 
-## 👨‍💻 Autor
+## Autor
+Elvis Job 
+Emerson Sergio
+Juvencio Miambo
 
-Projeto académico desenvolvido para fins de avaliação.
+Projeto académico desenvolvido para fins de avaliação na cadeira ESWA- 2026.
 ```
