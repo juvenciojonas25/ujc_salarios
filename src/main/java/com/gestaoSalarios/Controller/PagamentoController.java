@@ -23,30 +23,33 @@ public class PagamentoController {
 
     @PostMapping("/processar")
     @PreAuthorize("hasRole('FINANCEIRO')")
-    @Operation(summary = "Processar pagamento de um docente num determinado mês (formato yyyy-MM)")
     public ResponseEntity<Pagamento> processarPagamento(@RequestParam String docenteId,
-                                                        @RequestParam String mes) {
-        Pagamento pagamento = pagamentoService.processarPagamento(docenteId, mes);
-        return ResponseEntity.status(HttpStatus.CREATED).body(pagamento);
+                                                        @RequestParam int ano,
+                                                        @RequestParam int mes) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(pagamentoService.processarPagamento(docenteId, ano, mes));
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Listar todos os pagamentos (apenas ADMIN)")
     public ResponseEntity<List<Pagamento>> listarPagamentos() {
         return ResponseEntity.ok(pagamentoService.listarPagamentos());
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCEIRO')")
+    public ResponseEntity<Pagamento> buscarPorId(@PathVariable String id) {
+        return ResponseEntity.ok(pagamentoService.buscarPorId(id));
+    }
+
     @GetMapping("/docente/{docenteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCEIRO', 'DOCENTE')")
-    @Operation(summary = "Consultar pagamentos de um docente")
     public ResponseEntity<List<Pagamento>> listarPagamentosPorDocente(@PathVariable String docenteId) {
         return ResponseEntity.ok(pagamentoService.listarPagamentosPorDocente(docenteId));
     }
 
     @PatchMapping("/{pagamentoId}/estado")
     @PreAuthorize("hasRole('FINANCEIRO')")
-    @Operation(summary = "Alterar estado do pagamento (PROCESSADO, PAGO, PENDENTE)")
     public ResponseEntity<Pagamento> alterarEstado(@PathVariable String pagamentoId,
                                                    @RequestParam EstadoPagamento novoEstado) {
         return ResponseEntity.ok(pagamentoService.alterarEstadoPagamento(pagamentoId, novoEstado));

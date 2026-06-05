@@ -1,13 +1,14 @@
 package com.gestaoSalarios.Controller;
 
 import com.gestaoSalarios.Model.User;
+import com.gestaoSalarios.Security.JwtUtil;
 import com.gestaoSalarios.Service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,34 +22,31 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
     private UserService userService;
 
-    /**
-     * Endpoint de login.
-     * Exemplo de request: POST /auth/login com JSON { "username": "admin", "password": "123" }
-     * Retorna mensagem de sucesso e o perfil do usuário.
-     */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
         );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
         User user = (User) authentication.getPrincipal();
+        String token = jwtUtil.generateToken(user);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Login realizado com sucesso");
+        response.put("token", token);
         response.put("username", user.getUsername());
         response.put("role", user.getRole());
         return ResponseEntity.ok(response);
     }
 }
 
-// Classe auxiliar para request de login
 class LoginRequest {
     private String username;
     private String password;
-    // getters e setters (ou use @Data do Lombok)
+    // getters e setters
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getPassword() { return password; }
