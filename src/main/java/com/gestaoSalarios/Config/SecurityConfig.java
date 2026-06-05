@@ -24,7 +24,6 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     // O filtro será recebido como parâmetro no método filterChain (injeção por método)
-    // Não declarar como campo para evitar ciclo
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
